@@ -1,0 +1,4 @@
+# HTTP RPC Proxy - Dependencies
+# No external dependencies needed (using Python standard library)
+# This file is for Docker compatibility
+

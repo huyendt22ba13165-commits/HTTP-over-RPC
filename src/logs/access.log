@@ -1,0 +1,3 @@
+2025-12-07T21:04:13.529470|127.0.0.1|GET|http://example.com/|example.com|200|local|False|488.20
+2025-12-07T21:04:27.844799|127.0.0.1|GET|http://httpbin.org/ip|httpbin.org|200|local|False|673.90
+2025-12-07T21:04:27.877795|127.0.0.1|GET|http://example.com/|example.com|200|local|True|3.03

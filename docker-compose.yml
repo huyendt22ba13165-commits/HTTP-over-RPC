@@ -1,0 +1,115 @@
+# ============================================
+# CLOUD COMPUTING - Docker Compose
+# Orchestrates distributed HTTP RPC Proxy system
+# ============================================
+version: '3.8'
+
+services:
+  # ========================================
+  # RPC Workers (Scalability - 3 instances)
+  # ========================================
+  worker1:
+    build: .
+    container_name: rpc-worker-1
+    command: python rpc_worker.py 8001
+    environment:
+      - WORKER_ID=worker-1
+      - CACHE_DIR=/app/cache_data
+    volumes:
+      # Shared volume for DFS cache
+      - shared_cache:/app/cache_data
+    ports:
+      - "8001:8001"
+    networks:
+      - proxy-network
+    restart: unless-stopped
+
+  worker2:
+    build: .
+    container_name: rpc-worker-2
+    command: python rpc_worker.py 8001
+    environment:
+      - WORKER_ID=worker-2
+      - CACHE_DIR=/app/cache_data
+    volumes:
+      - shared_cache:/app/cache_data
+    ports:
+      - "8002:8001"
+    networks:
+      - proxy-network
+    restart: unless-stopped
+
+  worker3:
+    build: .
+    container_name: rpc-worker-3
+    command: python rpc_worker.py 8001
+    environment:
+      - WORKER_ID=worker-3
+      - CACHE_DIR=/app/cache_data
+    volumes:
+      - shared_cache:/app/cache_data
+    ports:
+      - "8003:8001"
+    networks:
+      - proxy-network
+    restart: unless-stopped
+
+  # ========================================
+  # Proxy Server (Load Balancer)
+  # ========================================
+  proxy:
+    build: .
+    container_name: rpc-proxy
+    command: python rpc_proxy_server.py 8080
+    environment:
+      - WORKERS=http://worker1:8001,http://worker2:8001,http://worker3:8001
+      - LOG_DIR=/app/logs
+    volumes:
+      #  Shared volume for MapReduce logs
+      - proxy_logs:/app/logs
+    ports:
+      - "8080:8080"
+    networks:
+      - proxy-network
+    depends_on:
+      - worker1
+      - worker2
+      - worker3
+    restart: unless-stopped
+
+  # ========================================
+  # Analytics (MapReduce - On demand)
+  # ========================================
+  analytics:
+    build: .
+    container_name: rpc-analytics
+    command: python analytics.py
+    environment:
+      - LOG_DIR=/app/logs
+    volumes:
+      - proxy_logs:/app/logs
+    networks:
+      - proxy-network
+    profiles:
+      - tools  # Only run when explicitly requested
+
+
+# ========================================
+# Volumes
+# ========================================
+
+volumes:
+  shared_cache:
+    name: http-proxy-cache
+    # All workers share this volume = Distributed File System
+  proxy_logs:
+    name: http-proxy-logs
+    # Shared logs for MapReduce analysis
+
+# ========================================
+# Network
+# ========================================
+networks:
+  proxy-network:
+    driver: bridge
+

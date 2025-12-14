@@ -1,0 +1,10 @@
+Category,Key,Value
+cache,False,2
+cache,True,1
+domain,example.com,2
+domain,httpbin.org,1
+hour,2025-12-07T21,3
+response_time,count,3
+response_time,total,1165.1299999999999
+status,200,3
+worker,local,3
